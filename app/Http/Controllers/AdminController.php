@@ -76,7 +76,7 @@ class AdminController extends Controller
         // Check if price has changed
         if ($oldPrice != $product->price) {
             // Get notification email from env
-            $notificationEmail = env('PRICE_NOTIFICATION_EMAIL', 'admin@example.com');
+            $notificationEmail = config('services.notifications.price_change_email');
 
             try {
                 SendPriceChangeNotification::dispatch(
