@@ -42,5 +42,5 @@ return [
     'notifications' => [
         'price_change_email' => env('PRICE_NOTIFICATION_EMAIL', 'admin@example.com'),
     ],
-    
+
 ];

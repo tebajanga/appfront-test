@@ -2,14 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Http\Requests\ProductRequest;
-use Illuminate\Support\Facades\Auth;
 use App\Models\Product;
 use App\Services\ProductService;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Validator;
-use App\Jobs\SendPriceChangeNotification;
 
 class AdminController extends Controller
 {
@@ -20,6 +15,7 @@ class AdminController extends Controller
     public function products()
     {
         $products = Product::all();
+
         return view('admin.products', compact('products'));
     }
 

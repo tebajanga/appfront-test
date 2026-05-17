@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Product extends Model
 {
     use HasFactory;
-    
+
     protected $guarded = ['id'];
 
     protected $fillable = [
@@ -24,9 +24,9 @@ class Product extends Model
     public function getImageUrlAttribute(): string
     {
         if (str_contains($this->image, 'uploads/products')) {
-            return asset('storage/' . $this->image);
+            return asset('storage/'.$this->image);
         }
-        
+
         return asset($this->image);
     }
 }
