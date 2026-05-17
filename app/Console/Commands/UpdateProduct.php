@@ -2,11 +2,9 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Product;
-use Illuminate\Support\Facades\Validator;
-use App\Jobs\SendPriceChangeNotification;
-use Illuminate\Support\Facades\Log;
+use App\Services\ProductService;
+use Illuminate\Console\Command;
 
 class UpdateProduct extends Command
 {
@@ -29,71 +27,75 @@ class UpdateProduct extends Command
      *
      * @return void
      */
-    public function __construct()
-    {
+    public function __construct(
+        private readonly ProductService $productService
+    ) {
         parent::__construct();
     }
 
     /**
      * Execute the console command.
-     *
-     * @return int
      */
-    public function handle()
+    public function handle(): int
     {
-        $id = $this->argument('id');
-        $product = Product::find($id);
+        $product = Product::find($this->argument('id'));
 
+        if (! $product) {
+            $this->error('Product not found.');
+
+            return self::FAILURE;
+        }
+
+        $data = $this->getUpdateData();
+
+        if ($data === []) {
+            $this->info('No changes provided. Product remains unchanged.');
+
+            return self::SUCCESS;
+        }
+
+        $this->productService->update($product, $data);
+
+        $this->info('Product updated successfully.');
+
+        return self::SUCCESS;
+    }
+
+    /**
+     * Collect and validate update data from command options.
+     */
+    private function getUpdateData(): array
+    {
         $data = [];
-        if ($this->option('name')) {
-            $data['name'] = $this->option('name');
-            if (empty($data['name']) || trim($data['name']) == '') {
-                $this->error("Name cannot be empty.");
-                return 1;
+
+        if ($this->option('name') !== null) {
+            $name = trim((string) $this->option('name'));
+
+            if ($name === '') {
+                $this->fail('Name cannot be empty.');
             }
-            if (strlen($data['name']) < 3) {
-                $this->error("Name must be at least 3 characters long.");
-                return 1;
+
+            if (strlen($name) < 3) {
+                $this->fail('Name must be at least 3 characters long.');
             }
-        }
-        if ($this->option('description')) {
-            $data['description'] = $this->option('description');
-        }
-        if ($this->option('price')) {
-            $data['price'] = $this->option('price');
+
+            $data['name'] = $name;
         }
 
+        if ($this->option('description') !== null) {
+            $data['description'] = trim((string) $this->option('description'));
+        }
 
-        $oldPrice = $product->price;
+        if ($this->option('price') !== null) {
+            $price = (float) $this->option('price');
 
-        if (!empty($data)) {
-            $product->update($data);
-            $product->save();
-
-            $this->info("Product updated successfully.");
-
-            // Check if price has changed
-            if (isset($data['price']) && $oldPrice != $product->price) {
-                $this->info("Price changed from {$oldPrice} to {$product->price}.");
-
-                $notificationEmail = config('services.notifications.price_change_email');
-
-                try {
-                    SendPriceChangeNotification::dispatch(
-                        $product,
-                        $oldPrice,
-                        $product->price,
-                        $notificationEmail
-                    );
-                    $this->info("Price change notification dispatched to {$notificationEmail}.");
-                } catch (\Exception $e) {
-                    $this->error("Failed to dispatch price change notification: " . $e->getMessage());
-                }
+            if ($price < 0) {
+                $this->fail('Price cannot be negative.');
             }
-        } else {
-            $this->info("No changes provided. Product remains unchanged.");
+
+            $data['price'] = $price;
         }
 
-        return 0;
+        return $data;
     }
 }
