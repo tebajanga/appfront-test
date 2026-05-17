@@ -18,6 +18,9 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
+        // Clear existing user
+        DB::table('users')->truncate();
+
         User::factory()->create([
             'name' => 'test',
             'email' => 'test@example.com',

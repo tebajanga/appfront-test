@@ -3,22 +3,30 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\ProductRequest;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Product;
+use App\Services\ProductService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use App\Jobs\SendPriceChangeNotification;
 
 class AdminController extends Controller
 {
+    public function __construct(
+        private ProductService $productService
+    ) {}
+
     public function loginPage()
     {
         return view('login');
     }
 
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
         if (Auth::attempt($request->except('_token'))) {
+            $request->session()->regenerate();
             return redirect()->route('admin.products');
         }
 
@@ -28,6 +36,10 @@ class AdminController extends Controller
     public function logout()
     {
         Auth::logout();
+
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
+
         return redirect()->route('login');
     }
 
@@ -37,66 +49,25 @@ class AdminController extends Controller
         return view('admin.products', compact('products'));
     }
 
-    public function editProduct($id)
+    public function editProduct(Product $product)
     {
-        $product = Product::find($id);
         return view('admin.edit_product', compact('product'));
     }
 
-    public function updateProduct(Request $request, $id)
+    public function updateProduct(ProductRequest $request, Product $product)
     {
-        // Validate the name field
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|min:3',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()
-                ->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        $product = Product::find($id);
-
-        // Store the old price before updating
-        $oldPrice = $product->price;
-
-        $product->update($request->all());
-
-        if ($request->hasFile('image')) {
-            $file = $request->file('image');
-            $filename = $file->getClientOriginalExtension();
-            $file->move(public_path('uploads'), $filename);
-            $product->image = 'uploads/' . $filename;
-        }
-
-        $product->save();
-
-        // Check if price has changed
-        if ($oldPrice != $product->price) {
-            // Get notification email from env
-            $notificationEmail = config('services.notifications.price_change_email');
-
-            try {
-                SendPriceChangeNotification::dispatch(
-                    $product,
-                    $oldPrice,
-                    $product->price,
-                    $notificationEmail
-                );
-            } catch (\Exception $e) {
-                 Log::error('Failed to dispatch price change notification: ' . $e->getMessage());
-            }
-        }
+        $this->productService->update(
+            $product,
+            $request->safe()->except('image'),
+            $request->file('image')
+        );
 
         return redirect()->route('admin.products')->with('success', 'Product updated successfully');
     }
 
-    public function deleteProduct($id)
+    public function deleteProduct(Product $product)
     {
-        $product = Product::find($id);
-        $product->delete();
+        $this->productService->delete($product);
 
         return redirect()->route('admin.products')->with('success', 'Product deleted successfully');
     }
@@ -106,35 +77,12 @@ class AdminController extends Controller
         return view('admin.add_product');
     }
 
-    public function addProduct(Request $request)
+    public function addProduct(ProductRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|min:3',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()
-                ->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        $product = Product::create([
-            'name' => $request->name,
-            'description' => $request->description,
-            'price' => $request->price
-        ]);
-
-        if ($request->hasFile('image')) {
-            $file = $request->file('image');
-            $filename = $file->getClientOriginalExtension();
-            $file->move(public_path('uploads'), $filename);
-            $product->image = 'uploads/' . $filename;
-        } else {
-            $product->image = 'product-placeholder.jpg';
-        }
-
-        $product->save();
+        $this->productService->create(
+            $request->safe()->except('image'),
+            $request->file('image')
+        );
 
         return redirect()->route('admin.products')->with('success', 'Product added successfully');
     }

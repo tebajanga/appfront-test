@@ -27,7 +27,7 @@
         <div class="product-detail">
             <div>
                 @if ($product->image)
-                    <img src="{{ config('app.url') }}/{{ $product->image }}" class="product-detail-image">
+                    <img src="{{ $product->image_url }}" class="product-detail-image">
                 @endif
             </div>
             <div class="product-detail-info">
