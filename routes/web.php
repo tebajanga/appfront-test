@@ -7,7 +7,7 @@ use App\Http\Controllers\AuthController;
 
 Route::get('/', [ProductController::class, 'index'])->name('products.index');
 
-Route::get('/products/{product_id}', [ProductController::class, 'show'])->name('products.show');
+Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
 
 Route::get('/login', [AuthController::class, 'loginPage'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
