@@ -80,7 +80,7 @@ I updated this to:
 Images are now stored under:
 
 ```text
-storage/app/public/products/
+storage/app/public/uploads/products/
 ```
 
 I also added a Product accessor for resolving image URLs.

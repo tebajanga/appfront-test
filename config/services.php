@@ -37,6 +37,7 @@ return [
 
     'currency' => [
         'exchange_rate' => env('EXCHANGE_RATE', 0.85),
+        'exchange_rate_api_url' => env('EXCHANGE_RATE_API_URL', 'https://api.exchangerate-api.com/v4/latest/USD'),
     ],
 
     'notifications' => [

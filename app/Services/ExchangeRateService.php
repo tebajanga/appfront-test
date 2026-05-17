@@ -13,7 +13,7 @@ class ExchangeRateService
         return Cache::remember('exchange_rate_usd_eur', now()->addMinutes(30), function () {
             try {
                 $response = Http::timeout(10)
-                    ->get('https://open.er-api.com/v6/latest/USD');
+                    ->get(config('services.currency.exchange_rate_api_url'));
 
                 if (! $response->successful()) {
                     Log::warning('Exchange rate API returned unsuccessful response', [
