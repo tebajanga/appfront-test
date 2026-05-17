@@ -1,0 +1,1 @@
+Exchange Rate: 1 USD = {{ number_format($exchangeRate, 4) }} EUR
