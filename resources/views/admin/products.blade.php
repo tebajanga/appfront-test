@@ -37,6 +37,11 @@
             margin-bottom: 20px;
             border-radius: 4px;
         }
+        .form-button-reset {
+            border: none;
+            font: inherit;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -46,6 +51,13 @@
             <div>
                 <a href="{{ route('admin.add.product') }}" class="btn btn-primary">Add New Product</a>
                 <a href="{{ route('logout') }}" class="btn btn-secondary">Logout</a>
+                <form action="{{ route('logout') }}" method="POST" style="display: inline;">
+                    @csrf
+
+                    <button type="submit" class="btn btn-secondary form-button-reset">
+                        Logout
+                    </button>
+                </form>
             </div>
         </div>
 
@@ -78,7 +90,19 @@
                     <td>${{ number_format($product->price, 2) }}</td>
                     <td>
                         <a href="{{ route('admin.edit.product', $product->id) }}" class="btn btn-primary">Edit</a>
-                        <a href="{{ route('admin.delete.product', $product->id) }}" class="btn btn-secondary" onclick="return confirm('Are you sure you want to delete this product?')">Delete</a>
+                        <form 
+                            action="{{ route('admin.delete.product', $product->id) }}" 
+                            method="POST" 
+                            style="display: inline;"
+                            onsubmit="return confirm('Are you sure you want to delete this product?')"
+                        >
+                            @csrf
+                            @method('DELETE')
+
+                            <button type="submit" class="btn btn-secondary form-button-reset">
+                                Delete
+                            </button>
+                        </form>
                     </td>
                 </tr>
                 @endforeach

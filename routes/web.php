@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AdminController;
 
-Route::get('/', [ProductController::class, 'index']);
+Route::get('/', [ProductController::class, 'index'])->name('products.index');
 
 Route::get('/products/{product_id}', [ProductController::class, 'show'])->name('products.show');
 
@@ -16,7 +16,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/products/add', [AdminController::class, 'addProductForm'])->name('admin.add.product');
     Route::post('/admin/products/add', [AdminController::class, 'addProduct'])->name('admin.add.product.submit');
     Route::get('/admin/products/edit/{product}', [AdminController::class, 'editProduct'])->name('admin.edit.product');
-    Route::post('/admin/products/edit/{product}', [AdminController::class, 'updateProduct'])->name('admin.update.product');
+    Route::put('/admin/products/edit/{product}', [AdminController::class, 'updateProduct'])->name('admin.update.product');
     Route::delete('/admin/products/delete/{product}', [AdminController::class, 'deleteProduct'])->name('admin.delete.product');
-    Route::get('/logout', [AdminController::class, 'logout'])->name('logout');
+    Route::post('/logout', [AdminController::class, 'logout'])->name('logout');
 });
