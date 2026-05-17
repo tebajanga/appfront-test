@@ -9,7 +9,7 @@ Route::get('/', [ProductController::class, 'index'])->name('products.index');
 
 Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
 
-Route::get('/login', [AuthController::class, 'loginPage'])->name('login');
+Route::get('/login', [AuthController::class, 'loginPage'])->middleware('throttle:5,1')->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
 
 Route::middleware(['auth'])->group(function () {
