@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Http\Requests\LoginRequest;
 use App\Http\Requests\ProductRequest;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Product;
@@ -17,31 +16,6 @@ class AdminController extends Controller
     public function __construct(
         private ProductService $productService
     ) {}
-
-    public function loginPage()
-    {
-        return view('login');
-    }
-
-    public function login(LoginRequest $request)
-    {
-        if (Auth::attempt($request->except('_token'))) {
-            $request->session()->regenerate();
-            return redirect()->route('admin.products');
-        }
-
-        return redirect()->back()->with('error', 'Invalid login credentials');
-    }
-
-    public function logout()
-    {
-        Auth::logout();
-
-        request()->session()->invalidate();
-        request()->session()->regenerateToken();
-
-        return redirect()->route('login');
-    }
 
     public function products()
     {
